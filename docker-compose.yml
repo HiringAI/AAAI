@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  fastapi-app:
+    build: .
+    container_name: hiring-ai-oep-app
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-8000}:8000"
+    # 필요시 의존성이 있다면 아래처럼 depends_on 등 추가
+    # depends_on:
+    #   - some-other-service
