@@ -17,4 +17,8 @@ async def make_prompt(provided_messages, provided_temperature, provided_max_toke
         )
 
 async def extract_content(completions):
-    return completions.choices[0].message.content
+    try:
+        return completions.choices[0].message.content
+    except (AttributeError, IndexError) as e:
+        # Handle the error or return a default value
+        return f"Error: {str(e)}"
