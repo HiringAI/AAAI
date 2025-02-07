@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     openai_endpoint: str
     openai_api_version: str
     deployment_name: str
+    openai_api_type: str
     port: int = 8000
 
     class Config:
