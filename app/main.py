@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import openai
 
+from api.v1.endpoints import analysis
 from config import settings
 
 app = FastAPI()
@@ -12,6 +13,6 @@ openai.api_type = settings.openai_api_type
 openai.api_base = settings.openai_endpoint
 openai.api_version = settings.openai_api_version
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello from FastAPI + Azure OpenAI!"}
+
+app.include_router(analysis.router, prefix="/api/v1/analysis")
+
