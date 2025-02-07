@@ -12,8 +12,6 @@ openai.api_type = settings.openai_api_type
 openai.api_base = settings.openai_endpoint
 openai.api_version = settings.openai_api_version
 
-
-
 @app.get("/")
 def read_root():
     return {"message": "Hello from FastAPI + Azure OpenAI!"}
