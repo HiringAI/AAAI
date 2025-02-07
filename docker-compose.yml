@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   fastapi-app:
     build: .
-    container_name: hiring-ai-oep-app
+    container_name: AAAI
     env_file:
       - .env
     ports:
