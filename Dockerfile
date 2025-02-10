@@ -1,5 +1,5 @@
 # 베이스 이미지 설정
-FROM python:3.10
+FROM python:3.10-slim
 
 # libgl 다운로드
 RUN apt-get update && apt-get install -y \
