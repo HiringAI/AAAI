@@ -1,5 +1,5 @@
 from openai import AzureOpenAI
-from config import settings
+from app.config import settings
 
 # Azure OpenAI 설정
 agent = AzureOpenAI(
