@@ -20,7 +20,7 @@ site_build
 venv
 docs.zip
 archive.zip
-static.videox.*
+static/*
 
 # vim temporary files
 *~
