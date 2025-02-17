@@ -43,6 +43,7 @@ async def analyze_video(video_content: bytes, filename: str, content_type: str):
         os.makedirs(static_images)
 
     images_urls = []
+    results = []
 
     # 4. 동영상에서 프레임을 하나씩 읽으면서 원하는 프레임만 추출 -> "실제로 프레임추출 하고 AI API로 전송"
     while True:
@@ -67,23 +68,31 @@ async def analyze_video(video_content: bytes, filename: str, content_type: str):
 
             # list 에 이미지 링크 저장
             images_urls.append(f"{settings.base_url}/{image_filename}")
+        if len(images_urls) == 20:
+            try:
+                # 5. propmt 만들기
+                message = OpenAIMessage()
 
+                for image_url in images_urls:
+                    message.add_user_message(message_type="image_url", content=image_url)
+
+                prompt = "이 사진들을 분석해줘"
+
+
+                message.add_user_message(message_type="text", content=prompt)
+
+                # 6. API 호출
+                results.append(extract_content(await make_prompt(message.get_messages(), 0.7, 100)))
+
+                # images_urls 초기화
+                images_urls = []
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"AI API 호출 오류: {str(e)}")
+            # 그룹 전송 후, 그룹 리스트 초기화
+            frames_group = []
         frame_index += 1
     cap.release()  # 동영상 캡처 객체 해제
 
-    # 5. propmt 만들기
-    message = OpenAIMessage()
-
-    for image_url in images_urls:
-        message.add_user_message(message_type="image_url", content=image_url)
-
-    prompt = "이 사진들을 분석해줘"
-
-    message.add_user_message(message_type="text", content=prompt)
-
-    # 6. API 호출
-    result = extract_content(await make_prompt(message.get_messages(), 0.7, 100))
-
-
     # 7. 최종적으로 처리 완료 메시지와 각 그룹 전송 결과를 반환
-    return {"detail": "동영상 처리 및 이미지 전송 완료", "results": result}
+    return {"detail": "동영상 처리 및 이미지 전송 완료", "results": results}
