@@ -78,7 +78,7 @@ async def analyze_video(id: str):
 
     for image_file in sorted(os.listdir(f"static/images/{id}")):
         if image_file.endswith(".jpg"):
-            image_url_list.append(f"{settings.base_url}/{image_file}")
+            image_url_list.append(f"{settings.base_url}/{id}/{image_file}")
 
         if len(image_url_list) == 20:
             try:
@@ -89,8 +89,8 @@ async def analyze_video(id: str):
                 message.add_user_message(message_type="text", content="이 사진들을 분석해줘")
                 results.append(await make_prompt(message.get_messages(), 0.7, 100))
 
-                images_urls = []
+                image_url_list = []
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"AI API 호출 오류: {str(e)}")
 
-        return {"detail": "동영상 처리 및 이미지 전송 완료", "results": results}
+    return {"detail": "동영상 처리 및 이미지 전송 완료", "results": results}
