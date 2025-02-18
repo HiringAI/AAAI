@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     openai_api_version: str
     openai_deployment: str
 
+    azure_blob_key: str
+
     base_url: str
     
     port: int = 8000

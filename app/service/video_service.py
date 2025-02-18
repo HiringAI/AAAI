@@ -1,17 +1,17 @@
 import os
 import cv2
-import requests
 from fastapi import HTTPException
 from app.config import settings
 import uuid
+
+from azure.storage.blob import BlobServiceClient
 
 from app.utils.openai_helper import make_prompt, extract_content
 from app.utils.openai_message import OpenAIMessage
 
 async def slicing_video(video_content: bytes, filename: str):
 
-    # uuid 생성
-    id = uuid.uuid4()
+    id = str(uuid.uuid4())
 
     # 1. 동영상 파일을 저장할 정적 폴더 지정 (static/videos)
     static_folder = f"static/videos/{id}"
@@ -48,17 +48,19 @@ async def slicing_video(video_content: bytes, filename: str):
     if not os.path.exists(static_images):
         os.makedirs(static_images)
 
+    # Create a unique name for the container
+    container_name = id
+
+    # Create the BlobServiceClient object
+    blob_service_client = BlobServiceClient.from_connection_string(settings.azure_blob_key)
+    
+    # Create the container
+    container_client = blob_service_client.create_container(container_name)
+
     # 4. 동영상에서 프레임을 하나씩 읽으면서 원하는 프레임만 추출 -> "실제로 프레임추출 하고 AI API로 전송"
     while True:
         ret, frame = cap.read()  # ret: 프레임 읽기 성공 여부, frame: 읽은 프레임 데이터
         if not ret:
-            # 더 이상 프레임이 없으면, 남은 프레임 그룹이 있다면 전송(20개가 되지 않아도 보냄)
-            if frames_group:
-                try:
-                    response = requests.post(settings.openai_endpoint, files=frames_group)
-                    response.raise_for_status()  # HTTP 상태 코드가 성공(200번대)이 아니면 예외 발생
-                except Exception as e:
-                    raise HTTPException(status_code=500, detail=f"AI API 호출 오류(마지막 그룹): {str(e)}")
             break  # 프레임 읽기를 종료
 
         # 프레임 번호가 추출해야 할 인덱스보다 크거나 같다면, 이 프레임을 추출 대상으로 함
@@ -66,8 +68,25 @@ async def slicing_video(video_content: bytes, filename: str):
             # 4-0. 추출한 프레임 images에 저장
             image_filename = f"frame_{frame_index}.jpg"
             image_path = os.path.join(static_images, image_filename)
+
             cv2.imwrite(image_path, frame)
+
+            # azure 에 이미지 업로드
+            try:
+                blob_client = blob_service_client.get_blob_client(container=container_name, blob=image_filename)
+                
+                
+                # Upload the created file
+                with open(file=image_path, mode="rb") as data:
+                    blob_client.upload_blob(data)
+            except Exception as e:
+                print(e)
+            
+            # 이미지 업로드 후 파일 삭제
+            os.remove(image_path)
         frame_index += 1
+
+    
     cap.release()  # 동영상 캡처 객체 해제
 
     return id
@@ -76,10 +95,10 @@ async def analyze_video(id: str):
     image_url_list = []
     results = []
 
-    for image_file in sorted(os.listdir(f"static/images/{id}")):
-        if image_file.endswith(".jpg"):
-            image_url_list.append(f"{settings.base_url}/{id}/{image_file}")
+    file_count = len(os.listdir(os.listdir(f"static/images/{id}")))
 
+    for i in range(file_count):
+        image_url_list.append(f"{settings.base_url}/{id}/frame_{i}.jpg")
         if len(image_url_list) == 20:
             try:
                 message = OpenAIMessage()
@@ -90,10 +109,8 @@ async def analyze_video(id: str):
 
                 llm_response = await make_prompt(message.get_messages(), 0.7, 100)
                 
-                print(llm_response)
-                
-                results.append(llm_response)
-                
+                results.append(extract_content(llm_response))
+
                 image_url_list = []
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"AI API 호출 오류: {str(e)}")

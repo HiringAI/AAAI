@@ -18,7 +18,7 @@ async def make_prompt(provided_messages, provided_temperature, provided_max_toke
         )
 
 # completions 속 llm 의 반환 메시지만 추출한다.
-async def extract_content(completions):
+def extract_content(completions):
     try:
         return completions.choices[0].message.content
     except (AttributeError, IndexError) as e:

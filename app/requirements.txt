@@ -5,4 +5,5 @@ python-dotenv==0.21.1
 python-multipart
 opencv-python
 openai==1.61.1
-requests==2.32.3
+azure-identity
+azure-storage-blob
