@@ -44,7 +44,7 @@ async def slicing_video(video_content: bytes, filename: str):
     frames_group = []  # 현재 1초 분량(20프레임)의 프레임 데이터를 저장할 리스트
 
     # 사진 저장할 디렉터리 생성
-    static_images = f"static/images{id}"
+    static_images = f"static/images/{id}"
     if not os.path.exists(static_images):
         os.makedirs(static_images)
 
