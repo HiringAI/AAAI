@@ -87,8 +87,13 @@ async def analyze_video(id: str):
                     message.add_user_message(message_type="image_url", content=image_url)
 
                 message.add_user_message(message_type="text", content="이 사진들을 분석해줘")
-                results.append(await make_prompt(message.get_messages(), 0.7, 100))
 
+                llm_response = await make_prompt(message.get_messages(), 0.7, 100)
+                
+                print(llm_response)
+                
+                results.append(llm_response)
+                
                 image_url_list = []
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"AI API 호출 오류: {str(e)}")
