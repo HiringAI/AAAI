@@ -81,9 +81,7 @@ async def slicing_video(video_content: bytes, filename: str):
                     blob_client.upload_blob(data)
             except Exception as e:
                 print(e)
-            
-            # 이미지 업로드 후 파일 삭제
-            os.remove(image_path)
+
         frame_index += 1
 
     
