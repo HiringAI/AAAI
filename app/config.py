@@ -6,11 +6,16 @@ class Settings(BaseSettings):
     openai_endpoint: str
     openai_api_version: str
     openai_deployment: str
+
+    azure_blob_key: str
+
+    base_url: str
     
     port: int = 8000
 
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
+
 
 settings = Settings()
