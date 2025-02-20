@@ -7,6 +7,8 @@ import asyncio
 import subprocess
 
 from azure.storage.blob import BlobServiceClient, PublicAccess
+from azure.core.exceptions import ResourceExistsError
+
 import google.generativeai as genai
 
 from app.utils.openai_helper import make_prompt, extract_content
