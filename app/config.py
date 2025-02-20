@@ -9,6 +9,9 @@ class Settings(BaseSettings):
 
     azure_blob_key: str
 
+    google_api_key: str
+    google_api_deployment: str
+
     base_url: str
     
     port: int = 8000
