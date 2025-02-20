@@ -3,6 +3,7 @@ import cv2
 from fastapi import HTTPException
 from app.config import settings
 import uuid
+import asyncio
 
 from azure.storage.blob import BlobServiceClient, PublicAccess
 import google.generativeai as genai
@@ -159,7 +160,15 @@ async def analyze_video(id: str):
     video_url = f"static/videos/{id}/video.mp4"
 
     # Upload the video.
-    video_file = genai.upload_file(path=video_url, mime_type="video/mp4")
+    video_file = genai.upload_file(path=video_url)
+
+    # Check whether the file is ready to be used.
+    while video_file.state.name == "PROCESSING":
+        await asyncio.sleep(10)
+        video_file = genai.get_file(video_file.name)
+
+    if video_file.state.name == "FAILED":
+        raise ValueError(video_file.state.name)
 
     # Choose a Gemini model.
     model = genai.GenerativeModel(model_name=settings.google_api_deployment)
@@ -169,6 +178,6 @@ async def analyze_video(id: str):
 
     # Make the LLM request.
     print("Making LLM inference request...")
-    response = model.generate_content([video_file, full_prompt], request_options={"timeout": 1000})
+    response = model.generate_content([video_file, full_prompt], request_options={"timeout": 10000})
 
     return {"detail": "동영상 분석 완료", "result": response.text}
