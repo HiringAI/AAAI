@@ -7,3 +7,4 @@ opencv-python
 openai==1.61.1
 azure-identity
 azure-storage-blob
+google-generativeai
