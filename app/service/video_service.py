@@ -49,7 +49,7 @@ async def slicing_video(video_content: bytes, filename: str):
     os.makedirs(static_images, exist_ok=True)
 
     container_name = id
-    blob_service_client.create_container(container_name)
+    blob_service_client.create_container(container_name, public_access=PublicAccess.container)
 
     # Use ffmpeg to extract frames
     frame_pattern = os.path.join(static_images, "frame_%04d.jpg")
