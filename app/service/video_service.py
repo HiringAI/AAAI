@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from app.config import settings
 import uuid
 
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, PublicAccess
 import google.generativeai as genai
 
 from app.utils.openai_helper import make_prompt, extract_content
@@ -55,7 +55,7 @@ async def slicing_video(video_content: bytes, filename: str):
     blob_service_client = BlobServiceClient.from_connection_string(settings.azure_blob_key)
 
     # Create the container
-    container_client = blob_service_client.create_container(container_name)
+    container_client = blob_service_client.create_container(container_name, public_access=PublicAccess.container)
 
     # 4. 동영상에서 프레임을 하나씩 읽으면서 원하는 프레임만 추출 -> "실제로 프레임추출 하고 AI API로 전송"
     while True:
@@ -139,7 +139,7 @@ async def whole_video(video_content: bytes, filename: str):
 
     # 5. 고유 ID를 컨테이너 이름으로 사용하여 새 컨테이너 생성
     try:
-        container_client = blob_service_client.create_container(id)
+        container_client = blob_service_client.create_container(id, public_access=PublicAccess.container)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Blob컨테이너 생성 오류: {str(e)}")
 
